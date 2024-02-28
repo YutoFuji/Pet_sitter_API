@@ -1,0 +1,606 @@
+openapi: 3.0.0
+# TODO：認証
+info:
+  title: petsitter_api
+  version: '1.0'
+  description: petsitter_api
+tags:
+  - name: '共通'
+  - name: '飼い主'
+  - name: 'ペットシッター'
+paths:
+  /v1/api/signup:
+    post:
+      summary: '新規会員登録'
+      tags:
+        - '共通'
+      responses:
+        '200':
+          $ref: '#/components/responses/OwnerResponse'
+        '422':
+         $ref: '#/components/responses/ValidationErrorResponse'
+      requestBody:
+        $ref: '#/components/requestBodies/SignUpParams'
+  /v1/api/owners/login:
+   post:
+    summary: '飼い主としてログイン'
+    tags:
+      - '飼い主'
+    responses:
+      '200':
+        $ref: '#/components/responses/OwnerResponse'
+      '422':
+        $ref: '#/components/responses/ValidationErrorResponse'
+    requestBody:
+      $ref: '#/components/requestBodies/LoginParams'
+  /v1/api/users/{user_id}/logout:
+    post:
+      summary: 'ログアウト'
+      tags:
+        - '共通'
+      responses:
+        '200':
+          $ref: '#/components/responses/MessageResponse'
+        '400':
+          $ref: '#/components/responses/BadRequestResponse'
+  /v1/api/users/{user_id}:
+    delete:
+      summary: '飼い主、ペットシッター情報削除'
+      tags:
+        - '共通'
+      responses:
+        '204':
+          description: 'No Content'
+        '404':
+          $ref: '#/components/responses/NotFoundErrorResponse'
+  /v1/api/owners/{owner_id}/mypage:
+    get:
+      summary: 'マイページ表示'
+      parameters:
+        - in: path
+          name: owner_id
+          schema:
+            type: integer
+          required: true
+      tags:
+       - '飼い主'
+      responses:
+        '200':
+          $ref: '#/components/responses/OwnerResponse'
+        '400':
+          $ref: '#/components/responses/BadRequestResponse'
+    post:
+      summary: 'マイページ作成'
+      parameters:
+        - in: path
+          name: owner_id
+          schema:
+            type: integer
+          required: true
+      tags:
+       - '飼い主'
+      responses:
+        '200':
+          $ref: '#/components/responses/OwnerResponse'
+        '400':
+          $ref: '#/components/responses/BadRequestResponse'
+    patch:
+      parameters:
+        - in: path
+          name: owner_id
+          schema:
+            type: integer
+          required: true
+      summary: 'マイページ編集'
+      tags:
+       - '飼い主'
+      responses:
+        '200':
+          $ref: '#/components/responses/OwnerResponse'
+        '400':
+          $ref: '#/components/responses/BadRequestResponse'
+        '402':
+          $ref: '#/components/responses/ValidationErrorResponse'
+  /v1/api/owners/{owner_id}/favorites:
+    get:
+      summary: '自分がいいねしたペットシッター一覧'
+      parameters:
+        - in: path
+          name: owner_id
+          schema:
+            type: integer
+          required: true
+      tags:
+       - '飼い主'
+      responses:
+        '200':
+          description: 'いいね一覧のレスポンス'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PetSitter'
+        '400':
+          $ref: '#/components/responses/BadRequestResponse'
+  /v1/api/owners/{owner_id}/favorite/{favorite_id}:
+    get:
+      summary: '自分がいいねしたペットシッター詳細'
+      parameters:
+        - in: path
+          name: owner_id
+          schema:
+            type: integer
+          required: true
+        - in: path
+          name: favorite_id
+          schema:
+            type: integer
+          required: true
+      tags:
+       - '飼い主'
+      responses:
+        '200':
+          description: 'いいね詳細のレスポンス'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PetSitter'
+        '400':
+          $ref: '#/components/responses/BadRequestResponse'
+  /v1/api/owners/{owner_id}/petsitters/{petsitter_id}/favorites:
+    post:
+      summary: 'ペットシッターをいいねする'
+      parameters:
+        - in: path
+          name: owner_id
+          schema:
+            type: integer
+          required: true
+        - in: path
+          name: petsitter_id
+          schema:
+            type: integer
+          required: true
+      tags:
+       - '飼い主'
+      responses:
+        '204':
+          description: 'No Content'
+        '404':
+          $ref: '#/components/responses/NotFoundErrorResponse'
+  /v1/api/owners/{owner_id}/petsitters/{petsitter_id}/favorites/cancel:
+    delete:
+      summary: 'ペットシッターのいいね取り消し'
+      parameters:
+        - in: path
+          name: owner_id
+          schema:
+            type: integer
+          required: true
+        - in: path
+          name: petsitter_id
+          schema:
+            type: integer
+          required: true
+      tags:
+       - '飼い主'
+      responses:
+        '204':
+          description: 'No Content'
+        '404':
+          $ref: '#/components/responses/NotFoundErrorResponse'
+  /v1/api/owners/{owner_id}/petsitters:
+    get:
+      summary: 'ペットシッター一覧表示'
+      parameters:
+        - in: path
+          name: owner_id
+          schema:
+            type: integer
+          required: true
+      tags:
+       - '飼い主'
+      responses:
+        '200':
+          description: 'ペットシッター一覧のレスポンス'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PetSitter'
+        '400':
+          $ref: '#/components/responses/BadRequestResponse'
+  /v1/api/owners/{owner_id}/petsitters/{petsitter_id}:
+    get:
+      summary: 'ペットシッター詳細表示'
+      parameters:
+        - in: path
+          name: owner_id
+          schema:
+            type: integer
+          required: true
+        - in: path
+          name: petsitter_id
+          schema:
+            type: integer
+          required: true
+      tags:
+       - '飼い主'
+      responses:
+        '200':
+          description: 'ペットシッター詳細のレスポンス'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PetSitter'
+        '400':
+          $ref: '#/components/responses/BadRequestResponse'
+  /v1/api/owners/{owner_id}/petsitters/{keyword}:
+    get:
+      summary: 'ペットシッターワード検索'
+      parameters:
+        - in: path
+          name: owner_id
+          schema:
+            type: integer
+          required: true
+        - in: query
+          name: keyword
+          schema:
+            type: string
+          required: false
+      tags:
+       - '飼い主'
+      responses:
+        '200':
+          description: 'キーワード検索結果'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PetSitter'
+        '400':
+          $ref: '#/components/responses/BadRequestResponse'
+  /v1/api/owners/{owner_id}/switch:
+    post:
+      summary: 'ペットシッター、飼い主切り替え'
+      parameters:
+        - in: path
+          name: owner_id
+          schema:
+            type: integer
+          required: true
+      tags:
+       - '飼い主'
+      responses:
+        '204':
+          description: 'No Content'
+        '404':
+          $ref: '#/components/responses/NotFoundErrorResponse'
+  /v1/api/petsitters/login:
+    post:
+      summary: 'ペットシッターとしてログイン'
+      tags:
+        - 'ペットシッター'
+      responses:
+        '200':
+          $ref: '#/components/responses/PetSitterResponse'
+        '422':
+          $ref: '#/components/responses/ValidationErrorResponse'
+      requestBody:
+        $ref: '#/components/requestBodies/LoginParams'
+  /v1/api/petsitters/{petsitter_id}/mypage:
+    get:
+      summary: 'マイページ表示'
+      parameters:
+        - in: path
+          name: petsitter_id
+          schema:
+            type: integer
+          required: true
+      tags:
+       - 'ペットシッター'
+      responses:
+        '200':
+          $ref: '#/components/responses/OwnerResponse'
+        '400':
+          $ref: '#/components/responses/BadRequestResponse'
+    post:
+      summary: 'マイページ作成'
+      parameters:
+        - in: path
+          name: petsitter_id
+          schema:
+            type: integer
+          required: true
+      tags:
+       - 'ペットシッター'
+      responses:
+        '200':
+          $ref: '#/components/responses/OwnerResponse'
+        '400':
+          $ref: '#/components/responses/BadRequestResponse'
+    patch:
+      parameters:
+        - in: path
+          name: petsitter_id
+          schema:
+            type: integer
+          required: true
+      summary: 'マイページ編集'
+      tags:
+       - 'ペットシッター'
+      responses:
+        '200':
+          $ref: '#/components/responses/OwnerResponse'
+        '400':
+          $ref: '#/components/responses/BadRequestResponse'
+        '402':
+          $ref: '#/components/responses/ValidationErrorResponse'
+  /v1/api/petsitters/{petsitter_id}/owners:
+    get:
+      summary: '飼い主一覧機能'
+      parameters:
+        - in: path
+          name: petsitter_id
+          schema:
+            type: integer
+          required: true
+      tags:
+       - 'ペットシッター'
+      responses:
+        '200':
+          description: 'いいねした飼い主一覧のレスポンス'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Owner'
+  /v1/api/petsitters/{petsitter_id}/owners/{owner_id}:
+    get:
+      summary: '飼い主詳細機能'
+      parameters:
+        - in: path
+          name: petsitter_id
+          schema:
+            type: integer
+          required: true
+        - in: path
+          name: reccruiter_id
+          schema:
+            type: integer
+          required: true
+      tags:
+       - 'ペットシッター'
+      responses:
+        '200':
+          description: 'ペットシッター詳細のレスポンス'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Owner'
+        '400':
+          $ref: '#/components/responses/BadRequestResponse'
+  /v1/api/petsitters/{petsitter_id}/owners/{keyword}:
+    get:
+      summary: '飼い主ワード検索'
+      parameters:
+        - in: path
+          name: petsitter_id
+          schema:
+            type: integer
+          required: true
+        - in: query
+          name: keyword
+          schema:
+            type: string
+          required: false
+      tags:
+       - 'ペットシッター'
+      responses:
+        '200':
+          description: 'キーワード検索結果'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Owner'
+        '400':
+          $ref: '#/components/responses/BadRequestResponse'
+  /v1/api/petsitters/{petsitter_id}/switch:
+    post:
+      summary: 'ペットシッター、飼い主切り替え'
+      parameters:
+        - in: path
+          name: petsitter_id
+          schema:
+            type: integer
+          required: true
+      tags:
+       - 'ペットシッター'
+      responses:
+        '204':
+          description: 'No Content'
+        '404':
+          $ref: '#/components/responses/NotFoundErrorResponse'
+
+
+components:
+  schemas:
+    Owner:
+      title: Owner
+      type: object
+      description: '飼い主の情報'
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        icon_image:
+          type: string
+        self_introduction:
+          type: string
+        favorite:
+          type: array
+          items:
+            $ref: '#/components/schemas/PetSitter'
+        created_at:
+          type: string
+        updated_at:
+          type: string
+    PetSitter:
+      title: PetSitter
+      type: object
+      description: 'PetSitterの情報'
+      properties:
+        id:
+         type: integer
+        is_registerd:
+          type: boolean
+        icon_image:
+          type: string
+        # TODO: 要件がまだ詰められていないので、未確定　ペットシッター歴などが必要になってくる
+    PetInfo:
+      title: PetInfo
+      type: object
+      description: '飼い主が登録するペットの情報'
+      properties:
+        id:
+          type: integer
+        is_recruiting:
+          type: boolean
+        animal:
+          type: string
+        pet_sex:
+          type: string
+        pet_image:
+          type: string
+  responses:
+    # 200系
+    OwnerResponse:
+        description: '飼い主としてログインをしたときのレスポンス'
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                owner:
+                  $ref: '#/components/schemas/Owner'
+                pet_info:
+                  $ref: '#/components/schemas/PetInfo'
+              required:
+                - owner
+    PetSitterResponse:
+      description: 'ペットシッターとしてログインをした時のレスポンス'
+      content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                owner:
+                  $ref: '#/components/schemas/Owner'
+                petsitter_info:
+                  $ref: '#/components/schemas/PetSitter'
+              required:
+                - owner
+                - petsitter_info
+    MessageResponse:
+      description: '成功したときのレスポンス'
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+            required:
+              - message
+    # 400系
+    BadRequestResponse:
+      description: '400レスポンス'
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+    NotFoundErrorResponse:
+      description: '404レスポンス'
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+              error:
+                type: string
+    ValidationErrorResponse:
+      description: '422レスポンス'
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              errors:
+                type: object
+            required:
+              - error
+  requestBodies:
+    SignUpParams:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              email:
+                type: string
+              password:
+                type: string
+              name:
+                type: string
+              icon_image:
+                type: string
+              self_introduction:
+                type: string
+              animal:
+                type: string
+              pet_sex:
+                type: string
+              pet_image:
+                type: string
+              is_recruiting:
+                type: boolean
+              pet_sitter_sex:
+                type: string
+              petsitter_age:
+                type: array
+                items:
+                  type: integer
+              start_time:
+                type: integer
+              end_time:
+                type: integer
+              day_of_week:
+                type: array
+                items:
+                  type: string
+            required:
+              - name
+              - icon_image
+    LoginParams:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              email:
+                type: string
+              password:
+                type: string
